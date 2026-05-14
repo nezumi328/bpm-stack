@@ -90,14 +90,25 @@ export default function App() {
 
       <footer style={{
         height: 50,
-        background: 'rgba(255,255,255,0.03)',
+        background: '#000',
         borderTop: '1px solid #1a1a1a',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
       }}>
-        <span style={{ fontSize: 11, color: '#2a2a2a', letterSpacing: '0.05em' }}>AD SPACE 320×50</span>
+        <a
+          href="https://www.youtube.com/user/up80k"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'block', lineHeight: 0 }}
+        >
+          <img
+            src="/banner.png"
+            alt="Music Studio レ"
+            style={{ height: 50, width: 'auto', display: 'block' }}
+          />
+        </a>
       </footer>
     </div>
   )
