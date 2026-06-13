@@ -17,13 +17,20 @@ export default function LiveView({ songs }) {
     let wakeLock = null
     const acquire = async () => {
       try {
-        if ('wakeLock' in navigator) {
+        if ('wakeLock' in navigator && document.visibilityState === 'visible') {
           wakeLock = await navigator.wakeLock.request('screen')
         }
       } catch (_) {}
     }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') acquire()
+    }
     acquire()
-    return () => { wakeLock?.release() }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      wakeLock?.release()
+    }
   }, [])
 
   if (songs.length === 0) {
