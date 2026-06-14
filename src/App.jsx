@@ -15,7 +15,20 @@ function parseInput(text) {
     .map((line, i) => {
       const trimmed = line.trim()
       if (!trimmed || trimmed.startsWith('#')) return null
-      const parts = trimmed.split(',').map(p => p.trim())
+
+      // 全角カンマ・読点・タブを半角カンマに正規化
+      const normalized = trimmed.replace(/[，、\t]/g, ',')
+
+      let parts
+      if (normalized.includes(',')) {
+        parts = normalized.split(',').map(p => p.trim()).filter(Boolean)
+      } else {
+        // カンマなし：空白でBPM数字の手前を区切りとみなす
+        const m = normalized.match(/^(.*?)\s+(\d+.*)$/)
+        parts = m
+          ? [m[1].trim(), m[2].trim()].filter(Boolean)
+          : [normalized]
+      }
 
       const bpmIndex = parts.findIndex(p => /^\d+/.test(p))
       if (bpmIndex === -1) return null
@@ -28,7 +41,7 @@ function parseInput(text) {
       const name = bpmIndex > 0
         ? parts.slice(0, bpmIndex).join(', ')
         : `Track ${i + 1}`
-      const bpmExtra = bpmMatch[2].replace(/^[.,]/, '')
+      const bpmExtra = bpmMatch[2].replace(/^[.,\s]+/, '')
       const memo = [bpmExtra, ...parts.slice(bpmIndex + 1)].filter(Boolean).join(', ')
 
       return { id: `${i}-${bpm}-${name}`, name, bpm, memo }
