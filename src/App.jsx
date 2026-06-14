@@ -23,11 +23,24 @@ function parseInput(text) {
       if (normalized.includes(',')) {
         parts = normalized.split(',').map(p => p.trim()).filter(Boolean)
       } else {
-        // カンマなし：空白でBPM数字の手前を区切りとみなす
+        // カンマなし①：空白でBPM数字の手前を区切りとみなす
         const m = normalized.match(/^(.*?)\s+(\d+.*)$/)
-        parts = m
-          ? [m[1].trim(), m[2].trim()].filter(Boolean)
-          : [normalized]
+        if (m) {
+          parts = [m[1].trim(), m[2].trim()].filter(Boolean)
+        } else {
+          // カンマなし②：行末2〜3文字がBPMの数字の場合（例: "Norwegian Wood187", "Let It Be76"）
+          const last3 = normalized.slice(-3)
+          const rest3 = normalized.slice(0, -3).trim()
+          const last2 = normalized.slice(-2)
+          const rest2 = normalized.slice(0, -2).trim()
+          if (/^\d{3}$/.test(last3) && !/^0/.test(last3) && rest3.length > 0 && /\D/.test(rest3)) {
+            parts = [rest3, last3]
+          } else if (/^\d{2}$/.test(last2) && !/^0/.test(last2) && rest2.length > 0 && /\D/.test(rest2)) {
+            parts = [rest2, last2]
+          } else {
+            parts = [normalized]
+          }
+        }
       }
 
       const bpmIndex = parts.findIndex(p => /^\d+/.test(p))
