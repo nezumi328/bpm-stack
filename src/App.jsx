@@ -10,7 +10,8 @@ Penny Lane,112,4/4シャッフル
 Let It Be,76`
 
 function parseInput(text) {
-  return text
+  const errors = []
+  const songs = text
     .split('\n')
     .map((line, i) => {
       const trimmed = line.trim()
@@ -44,12 +45,18 @@ function parseInput(text) {
       }
 
       const bpmIndex = parts.findIndex(p => /^\d+/.test(p))
-      if (bpmIndex === -1) return null
+      if (bpmIndex === -1) {
+        errors.push({ lineNum: i + 1, text: trimmed, reason: 'BPMが見つかりません' })
+        return null
+      }
 
       const bpmRaw = parts[bpmIndex]
       const bpmMatch = bpmRaw.match(/^(\d+)(.*)$/)
       const bpm = parseInt(bpmMatch[1])
-      if (bpm < 20 || bpm > 300) return null
+      if (bpm < 20 || bpm > 300) {
+        errors.push({ lineNum: i + 1, text: trimmed, reason: `BPM ${bpm} は範囲外です（20〜300）` })
+        return null
+      }
 
       const name = bpmIndex > 0
         ? parts.slice(0, bpmIndex).join(', ')
@@ -57,9 +64,12 @@ function parseInput(text) {
       const bpmExtra = bpmMatch[2].replace(/^[.,\s]+/, '')
       const memo = [bpmExtra, ...parts.slice(bpmIndex + 1)].filter(Boolean).join(', ')
 
-      return { id: `${i}-${bpm}-${name}`, name, bpm, memo }
+      // ④ キーを行番号ではなくコンテンツベースにする
+      return { id: `${name}-${bpm}-${memo}`, name, bpm, memo }
     })
     .filter(Boolean)
+
+  return { songs, errors }
 }
 
 export default function App() {
@@ -67,16 +77,24 @@ export default function App() {
   const [inputText, setInputText] = useState(
     () => localStorage.getItem(STORAGE_KEY) || DEFAULT_INPUT
   )
-  const [songs, setSongs] = useState(() => parseInput(
-    localStorage.getItem(STORAGE_KEY) || DEFAULT_INPUT
-  ))
+  const [songs, setSongs] = useState(
+    () => parseInput(localStorage.getItem(STORAGE_KEY) || DEFAULT_INPUT).songs
+  )
+  const [parseErrors, setParseErrors] = useState([])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, inputText)
   }, [inputText])
 
+  const handleTextChange = (text) => {
+    setInputText(text)
+    if (parseErrors.length > 0) setParseErrors([])
+  }
+
   const handleUpdateStack = () => {
-    setSongs(parseInput(inputText))
+    const { songs: parsed, errors } = parseInput(inputText)
+    setSongs(parsed)
+    setParseErrors(errors)
     setView('live')
   }
 
@@ -109,7 +127,12 @@ export default function App() {
 
       <main style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {view === 'edit'
-          ? <EditView inputText={inputText} setInputText={setInputText} onUpdateStack={handleUpdateStack} />
+          ? <EditView
+              inputText={inputText}
+              setInputText={handleTextChange}
+              onUpdateStack={handleUpdateStack}
+              parseErrors={parseErrors}
+            />
           : <LiveView songs={songs} />
         }
       </main>

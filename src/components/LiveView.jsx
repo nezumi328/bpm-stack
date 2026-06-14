@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import NoSleep from 'nosleep.js'
 import MetronomeCard from './MetronomeCard'
 
 const CARD_COLORS = [
@@ -14,22 +15,21 @@ const CARD_COLORS = [
 
 export default function LiveView({ songs }) {
   useEffect(() => {
-    let wakeLock = null
-    const acquire = async () => {
-      try {
-        if ('wakeLock' in navigator && document.visibilityState === 'visible') {
-          wakeLock = await navigator.wakeLock.request('screen')
-        }
-      } catch (_) {}
-    }
+    const noSleep = new NoSleep()
+    noSleep.enable()
+
+    // モダンブラウザはNoSleep.jsがWake Lock APIを使用
+    // 旧iOS等のフォールバックは内部で無音動画ループを使用
     const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') acquire()
+      if (document.visibilityState === 'visible' && !noSleep.isEnabled) {
+        noSleep.enable()
+      }
     }
-    acquire()
     document.addEventListener('visibilitychange', onVisibilityChange)
+
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange)
-      wakeLock?.release()
+      noSleep.disable()
     }
   }, [])
 
