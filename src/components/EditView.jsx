@@ -1,4 +1,4 @@
-export default function EditView({ inputText, setInputText, onUpdateStack, parseErrors }) {
+export default function EditView({ inputText, setInputText, onUpdateStack }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 16, gap: 12, overflow: 'hidden' }}>
       <p style={{ margin: 0, fontSize: 12, color: '#444', lineHeight: 1.6 }}>
@@ -25,28 +25,7 @@ export default function EditView({ inputText, setInputText, onUpdateStack, parse
         onFocus={e => { e.target.style.borderColor = '#444' }}
         onBlur={e => { e.target.style.borderColor = '#222' }}
       />
-      {parseErrors.length > 0 && (
-        <div style={{
-          padding: '10px 14px',
-          background: '#150a0a',
-          border: '1px solid #7f1d1d',
-          borderRadius: 8,
-          flexShrink: 0,
-        }}>
-          <div style={{ fontSize: 12, color: '#f87171', fontWeight: 700, marginBottom: 6, letterSpacing: '0.05em' }}>
-            ⚠ 認識できなかった行
-          </div>
-          {parseErrors.map((e, i) => (
-            <div key={i} style={{ fontSize: 12, color: '#fca5a5', lineHeight: 1.7 }}>
-              <span style={{ color: '#f87171', fontFamily: 'monospace' }}>行{e.lineNum}</span>
-              {'  '}
-              <span style={{ color: '#888', fontFamily: 'monospace' }}>{e.text}</span>
-              {'  —  '}
-              {e.reason}
-            </div>
-          ))}
-        </div>
-      )}
+
       <button
         onClick={onUpdateStack}
         style={{

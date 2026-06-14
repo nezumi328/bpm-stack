@@ -131,9 +131,8 @@ export default function App() {
               inputText={inputText}
               setInputText={handleTextChange}
               onUpdateStack={handleUpdateStack}
-              parseErrors={parseErrors}
             />
-          : <LiveView songs={songs} />
+          : <LiveView songs={songs} parseErrors={parseErrors} />
         }
       </main>
 
